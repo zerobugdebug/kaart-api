@@ -16,12 +16,11 @@ type GameController struct {
 // Read all games
 func (gameController GameController) ReadAll(context *gin.Context) {
 	var games []models.Game
-	//	gameController.Database.Find(&games)
-	gameController.Database.Preload("Player").Find(&games)
+	gameController.Database.Preload("Players").Preload("Turns").Find(&games)
 	context.JSON(http.StatusOK, games)
 }
 
-// POST /books
+// POST /games
 // Create new game
 func (gameController GameController) Create(context *gin.Context) {
 	// Validate input
@@ -30,11 +29,12 @@ func (gameController GameController) Create(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	// Create game
 	game.GameID = 0
-	gameController.Database.Create(&game)
-
+	if err := gameController.Database.Create(&game).Error; err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	context.JSON(http.StatusCreated, game)
 }
 
@@ -42,11 +42,9 @@ func (gameController GameController) Create(context *gin.Context) {
 // Read single game
 func (gameController GameController) Read(context *gin.Context) {
 	var game models.Game
-
-	if err := gameController.Database.Where("game_id = ?", context.Param("game_id")).First(&game).Error; err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+	if err := gameController.Database.Preload("Players").Preload("Turns").First(&game, context.Param("game_id")).Error; err != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
 		return
 	}
-
 	context.JSON(http.StatusOK, game)
 }

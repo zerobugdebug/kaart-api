@@ -12,6 +12,7 @@ type Game struct {
 	StartedAt   time.Time `json:"started_at"`
 	FinishedAt  time.Time `json:"finished_at"`
 	Players     []Player  `json:"players" gorm:"foreignKey:GameID;references:GameID"`
+	Turns       []Turn    `json:"turns" gorm:"foreignKey:GameID;references:GameID"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

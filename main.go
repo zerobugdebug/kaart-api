@@ -20,6 +20,10 @@ func ConnectDatabase() *gorm.DB {
 	database.AutoMigrate(&models.User{})
 	database.AutoMigrate(&models.Game{})
 	database.AutoMigrate(&models.Player{})
+	database.AutoMigrate(&models.Gamecard{})
+	database.AutoMigrate(&models.Turn{})
+	database.AutoMigrate(&models.Action{})
+	database.Exec("PRAGMA foreign_keys = ON;")
 
 	return database
 }
@@ -45,6 +49,30 @@ func main() {
 	ginEngine.GET("/games", gameController.ReadAll)
 	ginEngine.POST("/games", gameController.Create)
 	ginEngine.GET("/games/:game_id", gameController.Read)
+
+	var playerController controllers.PlayerController
+	playerController.Database = database
+	ginEngine.GET("/games/:game_id/players", playerController.ReadAll)
+	ginEngine.POST("/games/:game_id/players", playerController.Create)
+	ginEngine.GET("/games/:game_id/players/:player_id", playerController.Read)
+
+	var gamecardController controllers.GamecardController
+	gamecardController.Database = database
+	ginEngine.GET("/games/:game_id/players/:player_id/gamecards", gamecardController.ReadAll)
+	ginEngine.POST("/games/:game_id/players/:player_id/gamecards", gamecardController.Create)
+	ginEngine.GET("/games/:game_id/players/:player_id/gamecards/:gamecard_id", gamecardController.Read)
+
+	var turnController controllers.TurnController
+	turnController.Database = database
+	ginEngine.GET("/games/:game_id/turns", turnController.ReadAll)
+	ginEngine.POST("/games/:game_id/turns", turnController.Create)
+	ginEngine.GET("/games/:game_id/turns/:turn_id", turnController.Read)
+
+	var actionController controllers.ActionController
+	actionController.Database = database
+	ginEngine.GET("/games/:game_id/turns/:turn_id/actions", actionController.ReadAll)
+	ginEngine.POST("/games/:game_id/turns/:turn_id/actions", actionController.Create)
+	ginEngine.GET("/games/:game_id/turns/:turn_id/actions/:action_id", actionController.Read)
 
 	ginEngine.Run()
 }
