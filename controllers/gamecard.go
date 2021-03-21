@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/zerobugdebug/kaart-api/models"
@@ -16,22 +17,30 @@ type GamecardController struct {
 // Read all gamecards
 func (gamecardController GamecardController) ReadAll(context *gin.Context) {
 	var gamecards []models.Gamecard
-	statement := gamecardController.Database.Joins("JOIN players ON players.player_id = game_cards.player_id")
-	statement.Where("game_id = ? AND game_cards.player_id = ?", context.Param("game_id"), context.Param("player_id")).Find(&gamecards)
+	statement := gamecardController.Database.Joins("JOIN players ON players.player_id = gamecards.player_id")
+	statement.Where("game_id = ? AND gamecards.player_id = ?", context.Param("game_id"), context.Param("player_id")).Find(&gamecards)
 	context.JSON(http.StatusOK, gamecards)
 }
 
-// POST /gamecards
-// Create new gamecard
+//POST /gamecards
+//Create new gamecard
 func (gamecardController GamecardController) Create(context *gin.Context) {
-	// Validate input
+	//Validate input
 	var gamecard models.Gamecard
 	if err := context.ShouldBindJSON(&gamecard); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// Create gamecard
+
+	//TODO: Add check for the correct game_id also, not only for player_id
+	//Create gamecard
 	gamecard.GamecardID = 0
+	tmpPlayerID, err := strconv.Atoi(context.Param("player_id"))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	gamecard.PlayerID = uint(tmpPlayerID)
 	if err := gamecardController.Database.Create(&gamecard).Error; err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -43,8 +52,8 @@ func (gamecardController GamecardController) Create(context *gin.Context) {
 // Read single gamecard
 func (gamecardController GamecardController) Read(context *gin.Context) {
 	var gamecard models.Gamecard
-	statement := gamecardController.Database.Joins("JOIN players ON players.player_id = game_cards.player_id")
-	statement = statement.Where("game_id = ? AND game_cards.player_id = ?", context.Param("game_id"), context.Param("player_id"))
+	statement := gamecardController.Database.Joins("JOIN players ON players.player_id = gamecards.player_id")
+	statement = statement.Where("game_id = ? AND gamecards.player_id = ?", context.Param("game_id"), context.Param("player_id"))
 	if err := statement.First(&gamecard).Error; err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
 		return

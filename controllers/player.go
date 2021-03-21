@@ -17,7 +17,7 @@ type PlayerController struct {
 // Read all players
 func (playerController PlayerController) ReadAll(context *gin.Context) {
 	var players []models.Player
-	playerController.Database.Preload("GameCards").Where("game_id = ?", context.Param("game_id")).Find(&players)
+	playerController.Database.Preload("Gamecards").Preload("Actions").Where("game_id = ?", context.Param("game_id")).Find(&players)
 	context.JSON(http.StatusOK, players)
 }
 
@@ -45,11 +45,11 @@ func (playerController PlayerController) Create(context *gin.Context) {
 	context.JSON(http.StatusCreated, player)
 }
 
-// GET /players/:id
+// GET /games/:game_id/players/:player_id
 // Read single player
 func (playerController PlayerController) Read(context *gin.Context) {
 	var player models.Player
-	statement := playerController.Database.Preload("GameCards").Where("game_id = ? AND player_id = ?", context.Param("game_id"), context.Param("player_id"))
+	statement := playerController.Database.Preload("Gamecards").Preload("Actions").Where("game_id = ? AND player_id = ?", context.Param("game_id"), context.Param("player_id"))
 	if err := statement.First(&player).Error; err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
 		return

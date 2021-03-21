@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/zerobugdebug/kaart-api/models"
@@ -31,6 +32,12 @@ func (turnController TurnController) Create(context *gin.Context) {
 	}
 	// Create turn
 	turn.TurnID = 0
+	tmpGameID, err := strconv.Atoi(context.Param("game_id"))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	turn.GameID = uint(tmpGameID)
 	if err := turnController.Database.Create(&turn).Error; err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

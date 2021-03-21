@@ -17,12 +17,7 @@ func ConnectDatabase() *gorm.DB {
 		panic("Failed to connect to database!")
 	}
 
-	database.AutoMigrate(&models.User{})
-	database.AutoMigrate(&models.Game{})
-	database.AutoMigrate(&models.Player{})
-	database.AutoMigrate(&models.Gamecard{})
-	database.AutoMigrate(&models.Turn{})
-	database.AutoMigrate(&models.Action{})
+	database.AutoMigrate(&models.User{}, &models.Game{}, &models.Player{}, &models.Gamecard{}, &models.Turn{}, &models.Action{})
 	database.Exec("PRAGMA foreign_keys = ON;")
 
 	return database

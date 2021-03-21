@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/zerobugdebug/kaart-api/models"
@@ -29,8 +30,15 @@ func (actionController ActionController) Create(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	//TODO: Check for player_id also
 	// Create action
 	action.ActionID = 0
+	tmpTurnID, err := strconv.Atoi(context.Param("turn_id"))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	action.TurnID = uint(tmpTurnID)
 	if err := actionController.Database.Create(&action).Error; err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
